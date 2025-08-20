@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 def main():
     # 2 数据加载
-    train_iter, test_iter = d2l.load_data_fashion_mnist(256)  # 这行保持不变
+    train_iter, test_iter = d2l.load_data_fashion_mnist(256)  
 
     # 3 参数初始化
     def init_weights(m):
