@@ -3,6 +3,7 @@ import torch
 from torch import nn
 from d2l import torch as d2l
 import matplotlib.pyplot as plt
+from timm.optim import optim_factory
 
 def run_experiment(weight_decay, EPOCHS=10):
     # 2 数据加载
@@ -26,22 +27,8 @@ def run_experiment(weight_decay, EPOCHS=10):
     criterion = nn.CrossEntropyLoss()
 
     # 6 优化器（带正则项）
-    decay, no_decay = [], []
-    for name, p in net.named_parameters():
-        if not p.requires_grad:
-            continue
-        if name.endswith(".bias") or "bn" in name.lower():
-            no_decay.append(p)
-        else:
-            decay.append(p)
-
-    trainer = torch.optim.SGD(
-        [
-            {"params": decay, "weight_decay": weight_decay},
-            {"params": no_decay, "weight_decay": 0.0},
-        ],
-        lr=0.1,
-    )
+    param_groups = optim_factory.param_groups_weight_decay(net, weight_decay=weight_decay)
+    trainer = torch.optim.SGD(param_groups, lr=0.1)
 
     # 7 训练模型
     train_losses, test_accs = [], []
@@ -78,15 +65,16 @@ def run_experiment(weight_decay, EPOCHS=10):
 def main():
     # 测试的正则项系数（weight_decay）
     lambdas = [0.0, 1e-5, 1e-4, 1e-3]
+    EPOCHS = 3
 
     results = {}
     for lam in lambdas:
         print(f"Running experiment with weight_decay={lam}")
-        train_losses, test_accs = run_experiment(lam)
+        train_losses, test_accs = run_experiment(lam, EPOCHS=EPOCHS)
         results[lam] = (train_losses, test_accs)
 
     # 画图比较
-    epochs = range(1, 11)
+    epochs = range(1, EPOCHS + 1)
     plt.figure(figsize=(12, 5))
 
     # 子图1：训练损失
