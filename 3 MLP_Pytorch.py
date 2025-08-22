@@ -18,6 +18,7 @@ def main():
         nn.Flatten(),
         nn.Linear(784, 256),
         nn.ReLU(),
+        nn.Dropout(p=0.5)   # 丢弃法
         nn.Linear(256, 10)
     )
     net.apply(init_weights)
