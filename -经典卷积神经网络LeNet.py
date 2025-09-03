@@ -10,6 +10,8 @@ import torch.multiprocessing as mp
 # 2.1 数据预处理
 transform = transforms.Compose([
     transforms.Pad(2),                          # 28 -> 32
+    transforms.RandomRotation(10),     # 数据增强
+    transforms.RandomHorizontalFlip(),  
     transforms.ToTensor(),
     transforms.Normalize((0.1307,), (0.3081,))  # 官方均值/方差
 ])
@@ -36,6 +38,7 @@ class LeNet5(nn.Module):
         self.fc1 = nn.Linear(120, 84)
         self.fc2 = nn.Linear(84, num_classes)
         self.act = nn.ReLU()  
+        self.dropout = nn.Dropout(p=0.5)
 
     def forward(self, x):
         x = self.act(self.conv1(x))
@@ -45,6 +48,7 @@ class LeNet5(nn.Module):
         x = self.act(self.conv3(x))          # [B,120,1,1]
         x = x.view(x.size(0), -1)            # [B,120]
         x = self.act(self.fc1(x))
+        x = self.dropout(x)                  # 丢弃法
         x = self.fc2(x)                      # [B,10] (logits)
         return x
 
@@ -53,7 +57,7 @@ criterion = nn.CrossEntropyLoss()
 
 # 5. 优化器
 model = LeNet5()
-optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
+optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9, weight_decay=1e-4)   # 正则化
 
 # 6. 训练函数
 def train_epoch(model, loader, criterion, optimizer, device):
