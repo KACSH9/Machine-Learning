@@ -7,14 +7,18 @@ from torch.utils.data import DataLoader
 import torch.multiprocessing as mp
 
 # 2. 数据集
+# 2.1 数据预处理
 transform = transforms.Compose([
     transforms.Pad(2),                          # 28 -> 32
     transforms.ToTensor(),
     transforms.Normalize((0.1307,), (0.3081,))  # 官方均值/方差
 ])
+
+# 2.2 数据下载
 train_ds = datasets.MNIST("./data", train=True, download=True, transform=transform)
 test_ds  = datasets.MNIST("./data", train=False, download=True, transform=transform)
 
+# 2.3 数据加载
 train_loader = DataLoader(train_ds, batch_size=64, shuffle=True,
                           num_workers=0, pin_memory=False, persistent_workers=False)
 test_loader  = DataLoader(test_ds, batch_size=256, shuffle=False,
@@ -31,7 +35,7 @@ class LeNet5(nn.Module):
         self.conv3 = nn.Conv2d(16, 120, kernel_size=5, stride=1, padding=0)  # 5->1
         self.fc1 = nn.Linear(120, 84)
         self.fc2 = nn.Linear(84, num_classes)
-        self.act = nn.ReLU()  # 你选择了 ReLU，OK
+        self.act = nn.ReLU()  
 
     def forward(self, x):
         x = self.act(self.conv1(x))
